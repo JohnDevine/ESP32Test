@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>ESP32 Wi-Fi Explorer</title>
+<style>
+  :root {
+    --bg: #080c18;
+    --panel: rgba(255, 255, 255, 0.055);
+    --panel-strong: rgba(255, 255, 255, 0.09);
+    --border: rgba(255, 255, 255, 0.12);
+    --text: #e9edff;
+    --muted: #98a2c7;
+    --accent: #5b8cff;
+    --accent-2: #22d3ee;
+    --good: #34d399;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1100px 560px at 8% -12%, rgba(91, 140, 255, 0.30), transparent 62%),
+      radial-gradient(900px 520px at 108% 4%, rgba(34, 211, 238, 0.20), transparent 58%),
+      radial-gradient(800px 600px at 50% 120%, rgba(139, 92, 246, 0.16), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    padding: clamp(16px, 3vw, 40px);
+  }
+
+  .wrap { max-width: 1280px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+  }
+
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.7rem, 4vw, 2.9rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+  }
+
+  h1 span {
+    background: linear-gradient(92deg, var(--accent), var(--accent-2) 70%, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .sub {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.92rem;
+    min-height: 1.2em;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+    color: var(--text);
+    font: inherit;
+    font-weight: 650;
+    font-size: 0.95rem;
+    padding: 13px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:hover { transform: translateY(-1px); border-color: rgba(91, 140, 255, 0.65); }
+  .btn:active { transform: translateY(0) scale(0.985); }
+  .btn:disabled { opacity: 0.65; cursor: progress; }
+
+  .btn svg { width: 18px; height: 18px; }
+
+  .btn.loading svg { animation: spin 0.85s linear infinite; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 20px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .stat b {
+    display: block;
+    font-size: 1.45rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .stat span {
+    color: var(--muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    font-weight: 650;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+  }
+
+  .card {
+    position: relative;
+    overflow: hidden;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 20px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow);
+    animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px) scale(0.985); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .card h2 {
+    margin: 0;
+    font-size: 1.12rem;
+    letter-spacing: -0.015em;
+    word-break: break-word;
+  }
+
+  .bssid {
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.74rem;
+    margin-top: 5px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    border: 1px solid var(--border);
+    background: var(--panel-strong);
+  }
+
+  .chip.band { color: var(--accent-2); border-color: rgba(34, 211, 238, 0.35); }
+  .chip.good { color: var(--good); border-color: rgba(52, 211, 153, 0.35); background: rgba(52, 211, 153, 0.10); }
+  .chip.warn { color: var(--warn); border-color: rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.10); }
+  .chip.bad  { color: var(--bad);  border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.10); }
+
+  .signal {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 20px 0 18px;
+  }
+
+  .rssi {
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    min-width: 92px;
+  }
+
+  .rssi span {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-left: 4px;
+    letter-spacing: 0;
+  }
+
+  .meter {
+    flex: 1;
+    height: 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    overflow: hidden;
+  }
+
+  .meter i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .signal.good .rssi { color: var(--good); }
+  .signal.good .meter i { background: linear-gradient(90deg, #10b981, var(--good)); }
+  .signal.warn .rssi { color: var(--warn); }
+  .signal.warn .meter i { background: linear-gradient(90deg, #f59e0b, var(--warn)); }
+  .signal.bad .rssi { color: var(--bad); }
+  .signal.bad .meter i { background: linear-gradient(90deg, #ef4444, var(--bad)); }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+    margin: 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  dl > div { min-width: 0; }
+
+  dt {
+    color: var(--muted);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 0.85rem;
+    word-break: break-word;
+  }
+
+  .muted { color: var(--muted); }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--muted);
+    padding: 64px 24px;
+    border: 1px dashed var(--border);
+    border-radius: 22px;
+    font-size: 0.95rem;
+  }
+
+  .empty.error { color: var(--bad); border-color: rgba(248, 113, 113, 0.35); }
+
+  footer {
+    margin-top: 26px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 520px) {
+    dl { grid-template-columns: 1fr; }
+    header { align-items: flex-start; }
+    .btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">ESP32 Captive Portal</div>
+      <h1><span>Wi-Fi Explorer</span></h1>
+      <div class="sub" id="status">Preparing scanner&hellip;</div>
+    </div>
+    <button class="btn" id="refresh" type="button" aria-label="Refresh network list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12a9 9 0 1 1-2.64-6.36"></path>
+        <path d="M21 3v6h-6"></path>
+      </svg>
+      <span>Refresh</span>
+    </button>
+  </header>
+
+  <section class="stats" id="stats" aria-live="polite"></section>
+  <main class="grid" id="grid"></main>
+
+  <footer>ESP32 &middot; 2.4 GHz scanner &middot; results refresh on demand</footer>
+</div>
+
+<script>
+(() => {
+  const grid = document.getElementById('grid');
+  const stats = document.getElementById('stats');
+  const statusEl = document.getElementById('status');
+  const refreshBtn = document.getElementById('refresh');
+  let busy = false;
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+
+  const signalClass = (rssi) => rssi >= -60 ? 'good' : rssi >= -75 ? 'warn' : 'bad';
+  const signalWidth = (rssi) => Math.max(6, Math.min(100, 2 * (rssi + 100)));
+
+  function securityClass(auth) {
+    if (auth === 'OPEN' || auth === 'WEP') return 'bad';
+    if (auth === 'OWE' || auth === 'WPA-PSK') return 'warn';
+    return 'good';
+  }
+
+  function renderStats(aps) {
+    const strongest = aps.reduce((best, ap) => (!best || ap.rssi > best.rssi ? ap : best), null);
+    const bands = [...new Set(aps.map((ap) => ap.band).filter((b) => b !== 'unknown'))];
+    const open = aps.filter((ap) => ap.auth === 'OPEN').length;
+
+    stats.innerHTML = [
+      `<div class="stat"><b>${aps.length}</b><span>Networks</span></div>`,
+      `<div class="stat"><b>${strongest ? strongest.rssi + ' dBm' : '&mdash;'}</b><span>Strongest</span></div>`,
+      `<div class="stat"><b>${bands.length ? escapeHtml(bands.join(' / ')) : '&mdash;'}</b><span>Bands</span></div>`,
+      `<div class="stat"><b>${open}</b><span>Open networks</span></div>`
+    ].join('');
+  }
+
+  function renderCard(ap) {
+    const level = signalClass(ap.rssi);
+    const flags = [
+      ap.wps ? 'WPS' : null,
+      ap.ftm_resp ? 'FTM responder' : null,
+      ap.ftm_init ? 'FTM initiator' : null,
+      ap.dpp ? 'DPP' : null
+    ].filter(Boolean).join(' &middot; ') || '&mdash;';
+
+    const he = ap.he_bss_color
+      ? `${ap.he_bss_color}${ap.he_partial ? ' (partial)' : ''}`
+      : '&mdash;';
+
+    const vht = (ap.vht1 || ap.vht2) ? `${ap.vht1} / ${ap.vht2}` : '&mdash;';
+    const country = ap.country
+      ? `${escapeHtml(ap.country)} <span class="muted">ch ${ap.country_ch_start}&ndash;${ap.country_ch_end}, ${ap.max_tx} dBm</span>`
+      : '&mdash;';
+
+    return `
+      <article class="card">
+        <div class="card-top">
+          <div>
+            <h2>${escapeHtml(ap.ssid) || '<em class="muted">&lt;hidden&gt;</em>'}</h2>
+            <div class="bssid">${escapeHtml(ap.bssid)}</div>
+          </div>
+          <span class="chip band">${escapeHtml(ap.band)}</span>
+        </div>
+
+        <div class="signal ${level}">
+          <div class="rssi">${ap.rssi}<span>dBm</span></div>
+          <div class="meter"><i style="width:${signalWidth(ap.rssi)}%"></i></div>
+        </div>
+
+        <dl>
+          <div><dt>Frequency</dt><dd>${ap.freq} MHz</dd></div>
+          <div><dt>Channel</dt><dd>${ap.channel} <span class="muted">${escapeHtml(ap.second)}</span></dd></div>
+          <div><dt>Width</dt><dd>${escapeHtml(ap.bandwidth)}</dd></div>
+          <div><dt>Security</dt><dd><span class="chip ${securityClass(ap.auth)}">${escapeHtml(ap.auth)}</span></dd></div>
+          <div><dt>Pairwise</dt><dd>${escapeHtml(ap.pairwise)}</dd></div>
+          <div><dt>Group</dt><dd>${escapeHtml(ap.group)}</dd></div>
+          <div><dt>PHY</dt><dd>${escapeHtml(ap.phy)}</dd></div>
+          <div><dt>Antenna</dt><dd>${escapeHtml(ap.ant)}</dd></div>
+          <div><dt>Country</dt><dd>${country}</dd></div>
+          <div><dt>Flags</dt><dd>${flags}</dd></div>
+          <div><dt>HE BSS</dt><dd>${he}</dd></div>
+          <div><dt>VHT center</dt><dd>${vht}</dd></div>
+        </dl>
+      </article>`;
+  }
+
+  async function load() {
+    if (busy) return;
+    busy = true;
+    refreshBtn.classList.add('loading');
+    refreshBtn.disabled = true;
+    statusEl.textContent = 'Scanning for nearby networks\u2026';
+
+    try {
+      const response = await fetch('/api/scan', { cache: 'no-store' });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+
+      const aps = await response.json();
+      aps.sort((a, b) => b.rssi - a.rssi);
+
+      renderStats(aps);
+      grid.innerHTML = aps.length
+        ? aps.map(renderCard).join('')
+        : '<div class="empty">No networks found. Tap Refresh to scan again.</div>';
+
+      const now = new Date().toLocaleTimeString();
+      statusEl.textContent = `Updated ${now} \u00b7 ${aps.length} network${aps.length === 1 ? '' : 's'} found`;
+    } catch (error) {
+      statusEl.textContent = 'Scan failed: ' + error.message;
+      grid.innerHTML = '<div class="empty error">Unable to load scan results. Tap Refresh to retry.</div>';
+    } finally {
+      busy = false;
+      refreshBtn.classList.remove('loading');
+      refreshBtn.disabled = false;
+    }
+  }
+
+  refreshBtn.addEventListener('click', load);
+  load();
+})();
+</script>
+</body>
+</html>
