@@ -72,11 +72,19 @@ idf.py -p /dev/ttyUSB0 monitor
 
 ### Monitor keyboard shortcuts
 
-After `Ctrl+T`, then:
+Press `Ctrl+]` to exit the monitor directly. Press `Ctrl+T` for the menu, then:
 
-- `Ctrl+T` then `Ctrl+X` (or `Ctrl+]` in many setups): exit the monitor.
-- `Ctrl+T` then `Ctrl+H`: show the help menu.
-- `Ctrl+T` then `Ctrl+R`: reset the ESP32 board.
+- `Ctrl+T`: send the menu character itself to the remote.
+- `Ctrl+]`: send the exit character itself to the remote.
+- `Ctrl+R`: reset the target board via RTS.
+- `Ctrl+F`: build & flash project (fast reflash, ESP-IDF 6.1+).
+- `Ctrl+A` (or `A`): build & flash app only.
+- `Ctrl+E` (or `E`): build & full flash project.
+- `Ctrl+Y`: toggle output display.
+- `Ctrl+L`: toggle saving output to a file.
+- `Ctrl+I` (or `I`): toggle printing timestamps.
+- `Ctrl+P`: reset the target into the bootloader via DTR/RTS.
+- `Ctrl+X` (or `X`): exit program.
 
 ## Structure / conventions
 
