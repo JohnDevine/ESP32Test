@@ -16,7 +16,7 @@ sudo rm -rf build
 # ESP-IDF will automatically re-configure the project for your current path (⁠/home/johndevine/Projects/ESP32Projects/ESP32Test⁠), compile everything cleanly as your user, and flash it to your ESP32.
 
 # find the usb port the esp32 is on
-ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
+`ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null`
 # set permissions on the port
 sudo chmod 666 /dev/ttyUSB0
 
@@ -54,11 +54,11 @@ Press Ctrl+] to exit the monitor. Press Ctrl+T for the menu, then:
 1. Plug your ESP32/ESP8266 board into your Mac using a data-capable USB cable.
 2. Open your terminal and list the connected serial devices to find your port name by running:
 bash
-ls /dev/cu.*
+`ls /dev/cu.*`
 3. Look for an entry matching one of these common patterns:
 • CP210x chips: / dev/cu.SLAB_USBtoUART
-• CH340/CH9102 chips: /dev/cu.wchusbserial* or /dev/cu.usbserial-*
-• Native USB (ESP32-S2/S3/C3): / dev/cu. usbmodem*
+• CH340/CH9102 chips: `/dev/cu.wchusbserial*` or `/dev/cu.usbserial-*`
+• Native USB (ESP32-S2/S3/C3): `/dev/cu.usbmodem*`
 
 - 2. Export the ESP-IDF Environment
 Before running any idf py commands, make sure your current terminal session has loaded the IDF environment paths:
