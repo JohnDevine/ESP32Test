@@ -1,0 +1,62 @@
+#--------------------------------------------------------------------------- 
+# Project related configuration options
+#---------------------------------------------------------------------------
+
+PROJECT_NAME           = "ESP32 Relay Project"
+PROJECT_BRIEF          = "Create a program to control a relay via WiFi"
+OUTPUT_DIRECTORY       = docs
+
+#--------------------------------------------------------------------------- 
+# Configuration options related to input files
+#---------------------------------------------------------------------------
+
+INPUT                  = src, include, lib
+FILE_PATTERNS          = *.c *.h
+RECURSIVE              = YES
+EXCLUDE                = 
+
+#--------------------------------------------------------------------------- 
+# Configuration options related to source browsing
+#---------------------------------------------------------------------------
+
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+STRIP_CODE_COMMENTS    = NO
+
+#--------------------------------------------------------------------------- 
+# Build related configuration options
+#---------------------------------------------------------------------------
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+
+#--------------------------------------------------------------------------- 
+# Configuration options related to the output
+#---------------------------------------------------------------------------
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+
+GENERATE_LATEX         = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+GENERATE_XML           = NO
+
+#--------------------------------------------------------------------------- 
+# Configuration options related to dot/graphs
+#---------------------------------------------------------------------------
+
+HAVE_DOT               = YES
+DOT_PATH               =
+DOTFILE_DIRS           =
+DOT_GRAPH_MAX_NODES    = 50
+MAX_DOT_GRAPH_DEPTH    = 0
+DOT_MULTI_TARGETS      = NO
+GENERATE_LEGEND        = YES
+DOT_CLEANUP            = YES
+DOT_IMAGE_FORMAT       = png
+INTERACTIVE_SVG        = NO
+DIRECTORY_GRAPH        = YES
+DIR_GRAPH_MAX_DEPTH    = 1
+GRAPHICAL_HIERARCHY    = YES

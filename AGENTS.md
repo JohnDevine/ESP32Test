@@ -2,6 +2,14 @@
 
 Bare ESP-IDF (C) firmware project. Not Arduino. Project/binary name is `ESP32Test`.
 
+## Environment
+
+OpenCode runs inside a Docker container. The native project at
+`/home/johndevine/Projects/ESP32Projects/ESP32Test` is mapped to `/workspace` in the
+container. Building happens in the container, but **flashing must be done from the
+native environment** (not the container), because USB ports are not available inside
+the container.
+
 ## Toolchain setup (required in every shell)
 
 ESP-IDF v6.1 is installed at `/root/.espressif/v6.1/esp-idf`. The environment ships
@@ -23,7 +31,52 @@ idf.py menuconfig             # edits sdkconfig
 idf.py fullclean              # remove build/ + sdkconfig thoroughly
 ```
 
+Important: Always set the correct chip target using `idf.py set-target <chip_name>` before building. Refer to `hardware/esp32` for specific chip requirements.
+
 Verified: `idf.py build` succeeds on the default `esp32` target.
+
+## External flash & monitor
+
+Flashing is done in the **native environment**, not the container.
+
+```sh
+# make sure permissions are ok on espressif idf
+sudo chown -R $USER:$USER /home/johndevine/.espressif
+
+# install
+/home/johndevine/.espressif/v6.1/esp-idf/install.sh
+
+# export environment (use at each new login)
+cd /home/johndevine/Projects/ESP32Projects/ESP32Test
+. /home/johndevine/.espressif/v6.1/esp-idf/export.sh
+
+# remove the build directory (permission problems)
+sudo rm -rf build
+
+# ESP-IDF re-configures the project for the current path
+# (/home/johndevine/Projects/ESP32Projects/ESP32Test), compiles cleanly as your
+# user, and is then ready to flash.
+
+# find the USB port the ESP32 is on
+ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
+
+# set permissions on the port
+sudo chmod 666 /dev/ttyUSB0
+
+# flash the chip
+idf.py -p /dev/ttyUSB0 flash
+
+# monitor
+idf.py -p /dev/ttyUSB0 monitor
+```
+
+### Monitor keyboard shortcuts
+
+After `Ctrl+T`, then:
+
+- `Ctrl+T` then `Ctrl+X` (or `Ctrl+]` in many setups): exit the monitor.
+- `Ctrl+T` then `Ctrl+H`: show the help menu.
+- `Ctrl+T` then `Ctrl+R`: reset the ESP32 board.
 
 ## Structure / conventions
 
