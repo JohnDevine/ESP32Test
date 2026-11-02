@@ -1,0 +1,19 @@
+# Build artifacts
+build/
+.ninja/
+.caching/
+
+# ESP-IDF specific
+sdkconfig.old
+managed_components/
+
+# IDE and logs
+.vscode/
+.idea/
+*.log
+*.pyc
+__pycache__/
+
+# OS files
+.DS_Store
+Thumbs.db
